@@ -1,0 +1,38 @@
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
+import pymongo
+import json
+
+from tornado.options import define, options
+define("port",default = 8000, help="run on the given port", type =int)
+
+class Application(tornado.web.Application):
+        def __init__(self):
+                handlers = [(r"/", MovieHandler)]
+		conn = pymongo.Connection("",)
+		self.db = conn[""]
+		tornado.web.Application.__init__(self,handlers,debug=True)
+
+
+			
+class MovieHandler(tornado.web.RequestHandler):
+	def get(self):
+		title = self.get_argument('')
+		coll = self.application.db.moviesJson
+		film_doc = coll.find_one({"": }, {"movies.$" : 1})
+		if film_doc:
+			del film_doc["_id"]
+			self.write(film_doc)
+		else:
+			self.set_status(404)
+			self.write({"error": "film not found"})
+
+
+		
+if __name__=="__main__":
+	tornado.options.parse_command_line()
+	http_server = tornado.httpserver.HTTPServer(Application())
+	http_server.listen(options.port)
+	tornado.ioloop.IOLoop.instance().start()
